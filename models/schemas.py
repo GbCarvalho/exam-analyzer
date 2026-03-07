@@ -7,6 +7,13 @@ Provider = Literal["cebraspe", "fgv"]
 BookletType = Literal["basicos", "especificos"]
 
 
+class ProviderMeta(BaseModel):
+    id: Provider
+    label: str
+    description: str
+    supports_dual_booklet: bool
+
+
 class ExamCreate(BaseModel):
     expected_questions: int
     cargo: str | None = None

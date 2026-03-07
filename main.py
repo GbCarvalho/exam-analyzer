@@ -20,6 +20,7 @@ from models.schemas import (
     Question,
     QuestionPatch,
     BulkQuestionPatch,
+    ProviderMeta,
 )
 
 app = FastAPI(title="Exam Analyzer")
@@ -74,9 +75,30 @@ def _extract_text_from_columns(doc: fitz.Document, skip_first: bool) -> list[str
     return columns
 
 
+_PROVIDERS: list[ProviderMeta] = [
+    ProviderMeta(
+        id="cebraspe",
+        label="CEBRASPE",
+        description="Questões C/E — suporta dois cadernos (básicos + específicos)",
+        supports_dual_booklet=True,
+    ),
+    ProviderMeta(
+        id="fgv",
+        label="FGV",
+        description="Questões A–E — caderno único por cargo e tipo",
+        supports_dual_booklet=False,
+    ),
+]
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/providers", response_model=list[ProviderMeta])
+def list_providers():
+    return _PROVIDERS
 
 
 @app.post("/exams")
