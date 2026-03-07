@@ -115,7 +115,10 @@ async def upload_exam(
     # Check for duplicate
     existing = mem.find_exam_by_identity(exam_code, inferred_cargo, inferred_exam_type, booklet_type)
     if existing:
-        raise HTTPException(status_code=409, detail="Exam already exists")
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "exam_already_exists", "exam_id": existing["exam_id"]},
+        )
 
     # Fallback to OCR + Claude vision if question count doesn't match
     partial = False
