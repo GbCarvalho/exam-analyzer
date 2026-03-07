@@ -2,6 +2,7 @@ from __future__ import annotations
 import fitz
 import uuid6
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 import storage.memory as mem
@@ -24,6 +25,13 @@ from models.schemas import (
 )
 
 app = FastAPI(title="Exam Analyzer")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 import os
 try:
