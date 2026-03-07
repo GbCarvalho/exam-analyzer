@@ -17,6 +17,9 @@ from models.schemas import (
     AnswerKeyResponse,
     AnalyzeResponse,
     ResultResponse,
+    Question,
+    QuestionPatch,
+    BulkQuestionPatch,
 )
 
 app = FastAPI(title="Exam Analyzer")
@@ -243,3 +246,20 @@ def get_result(exam_id: str, result_id: str):
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
     return result
+
+
+@app.patch("/exams/{exam_id}/questions/{number}", response_model=Question)
+def patch_question(exam_id: str, number: int, body: QuestionPatch):
+    if not mem.get_exam(exam_id):
+        raise HTTPException(status_code=404, detail="Exam not found")
+    updated = mem.update_question(exam_id, number, body.statement)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return updated
+
+
+@app.patch("/exams/{exam_id}/questions", response_model=list[Question])
+def patch_questions_bulk(exam_id: str, body: BulkQuestionPatch):
+    if not mem.get_exam(exam_id):
+        raise HTTPException(status_code=404, detail="Exam not found")
+    return mem.bulk_update_questions(exam_id, [u.model_dump() for u in body.updates])

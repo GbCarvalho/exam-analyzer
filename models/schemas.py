@@ -69,3 +69,16 @@ class BreakdownItem(BaseModel):
 class ResultResponse(BaseModel):
     score: Score
     breakdown: list[BreakdownItem]
+
+
+class QuestionPatch(BaseModel):
+    statement: str
+
+
+class BulkQuestionPatchItem(BaseModel):
+    number: int
+    statement: str
+
+
+class BulkQuestionPatch(BaseModel):
+    updates: list[BulkQuestionPatchItem]

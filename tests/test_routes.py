@@ -231,3 +231,43 @@ def test_get_results_breakdown():
 def test_get_result_not_found():
     exam_id = _post_fgv_exam().json()["exam_id"]
     assert client.get(f"/exams/{exam_id}/results/nonexistent").status_code == 404
+
+
+def test_patch_question_updates_statement():
+    exam_id = _post_fgv_exam().json()["exam_id"]
+    r = client.patch(f"/exams/{exam_id}/questions/1", json={"statement": "Edited Q1"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["statement"] == "Edited Q1"
+    assert data["manual"] is True
+    assert data["number"] == 1
+
+
+def test_patch_question_returns_404_for_missing_exam():
+    r = client.patch("/exams/nonexistent/questions/1", json={"statement": "x"})
+    assert r.status_code == 404
+
+
+def test_patch_question_returns_404_for_missing_number():
+    exam_id = _post_fgv_exam().json()["exam_id"]
+    r = client.patch(f"/exams/{exam_id}/questions/999", json={"statement": "x"})
+    assert r.status_code == 404
+
+
+def test_bulk_patch_questions():
+    exam_id = _post_fgv_exam().json()["exam_id"]
+    r = client.patch(f"/exams/{exam_id}/questions", json={
+        "updates": [
+            {"number": 1, "statement": "Bulk Q1"},
+            {"number": 2, "statement": "Bulk Q2"},
+        ]
+    })
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) == 2
+    assert all(q["manual"] is True for q in data)
+
+
+def test_bulk_patch_questions_returns_404_for_missing_exam():
+    r = client.patch("/exams/nonexistent/questions", json={"updates": [{"number": 1, "statement": "x"}]})
+    assert r.status_code == 404
