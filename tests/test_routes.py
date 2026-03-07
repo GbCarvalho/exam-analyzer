@@ -38,7 +38,7 @@ def _fgv_pdf_mock():
 
 def _post_fgv_exam(expected_questions: int = 5) -> dict:
     """Helper: upload a mocked FGV exam."""
-    with patch("main._open_pdf") as mock_open, \
+    with patch("main._merge_pdfs", return_value=MagicMock()), \
          patch("main.fgv.is_cover_page", return_value=True), \
          patch("main._extract_text_from_columns", return_value=STUB_COLUMN_TEXTS), \
          patch("main._detect_provider", return_value="fgv"), \
@@ -47,11 +47,10 @@ def _post_fgv_exam(expected_questions: int = 5) -> dict:
          patch("main.fgv.extract_exam_type", return_value="TIPO BRANCA"), \
          patch("main.fgv.parse_questions", return_value=STUB_QUESTIONS), \
          patch("main.needs_fallback", return_value=False):
-        mock_open.return_value = MagicMock()
         resp = client.post(
             "/exams",
             data={"expected_questions": expected_questions},
-            files={"file": ("exam.pdf", b"%PDF stub", "application/pdf")},
+            files=[("files", ("exam.pdf", b"%PDF stub", "application/pdf"))],
         )
     return resp
 
@@ -69,20 +68,20 @@ def test_upload_fgv_exam_returns_200():
 
 
 def test_upload_cebraspe_requires_cargo():
-    with patch("main._open_pdf"), \
+    with patch("main._merge_pdfs", return_value=MagicMock()), \
          patch("main.fgv.is_cover_page", return_value=False), \
          patch("main._extract_text_from_columns", return_value=["CEBRASPE – TCU text", "more text"]), \
          patch("main._detect_provider", return_value="cebraspe"):
         resp = client.post(
             "/exams",
             data={"expected_questions": 100},
-            files={"file": ("exam.pdf", b"%PDF stub", "application/pdf")},
+            files=[("files", ("exam.pdf", b"%PDF stub", "application/pdf"))],
         )
     assert resp.status_code == 422
 
 
 def test_upload_cebraspe_with_cargo():
-    with patch("main._open_pdf"), \
+    with patch("main._merge_pdfs", return_value=MagicMock()), \
          patch("main.fgv.is_cover_page", return_value=False), \
          patch("main._extract_text_from_columns", return_value=["CEBRASPE text", "more"]), \
          patch("main._detect_provider", return_value="cebraspe"), \
@@ -92,7 +91,7 @@ def test_upload_cebraspe_with_cargo():
         resp = client.post(
             "/exams",
             data={"expected_questions": 5, "cargo": "Auditor Federal", "booklet_type": "basicos"},
-            files={"file": ("exam.pdf", b"%PDF stub", "application/pdf")},
+            files=[("files", ("exam.pdf", b"%PDF stub", "application/pdf"))],
         )
     assert resp.status_code == 200
     assert resp.json()["cargo"] == "Auditor Federal"
@@ -105,7 +104,7 @@ def test_upload_duplicate_returns_409():
 
 
 def test_upload_returns_206_when_partial():
-    with patch("main._open_pdf"), \
+    with patch("main._merge_pdfs", return_value=MagicMock()), \
          patch("main.fgv.is_cover_page", return_value=True), \
          patch("main._extract_text_from_columns", return_value=STUB_COLUMN_TEXTS), \
          patch("main._detect_provider", return_value="fgv"), \
@@ -120,7 +119,7 @@ def test_upload_returns_206_when_partial():
         resp = client.post(
             "/exams",
             data={"expected_questions": 60},
-            files={"file": ("exam.pdf", b"%PDF stub", "application/pdf")},
+            files=[("files", ("exam.pdf", b"%PDF stub", "application/pdf"))],
         )
     assert resp.status_code == 206
     assert resp.json()["partial"] is True

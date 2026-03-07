@@ -49,6 +49,14 @@ def _open_pdf(pdf_bytes: bytes) -> fitz.Document:
     return fitz.open(stream=pdf_bytes, filetype="pdf")
 
 
+def _merge_pdfs(parts_bytes: list[bytes]) -> fitz.Document:
+    """Merge one or more PDF byte strings into a single fitz.Document."""
+    merged = fitz.open()
+    for pdf_bytes in parts_bytes:
+        merged.insert_pdf(_open_pdf(pdf_bytes))
+    return merged
+
+
 def _extract_text_from_columns(doc: fitz.Document, skip_first: bool) -> list[str]:
     """Primary extraction: use PyMuPDF embedded text (fast, accurate for digital PDFs)."""
     columns: list[str] = []
@@ -73,14 +81,14 @@ def health():
 
 @app.post("/exams")
 async def upload_exam(
-    file: UploadFile = File(...),
+    files: list[UploadFile] = File(...),
     expected_questions: int = Form(...),
     cargo: str | None = Form(None),
     exam_type: str | None = Form(None),
     booklet_type: str | None = Form(None),
 ):
-    pdf_bytes = await file.read()
-    doc = _open_pdf(pdf_bytes)
+    parts_bytes = [await f.read() for f in files]
+    doc = _merge_pdfs(parts_bytes)
 
     # Detect FGV cover page from right column of page 0
     first_page = doc[0]
