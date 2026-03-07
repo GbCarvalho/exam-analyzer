@@ -1,16 +1,21 @@
 """
 Real-world benchmark: runs full pipeline on actual exam PDFs and reports timing.
-Usage: python benchmark.py
+
+Not executed in the default pytest run. Run explicitly:
+    pytest tests/benchmark/ -v -s
 """
 import time
 import json
+import pytest
 from pathlib import Path
 from fastapi.testclient import TestClient
 from main import app
 import storage.memory as mem
 
+pytestmark = pytest.mark.benchmark
+
 client = TestClient(app)
-ASSETS = Path(__file__).parent.parent / "assets"
+ASSETS = Path(__file__).parents[3] / "assets"
 
 
 def section(title: str):
@@ -182,7 +187,8 @@ def run_fgv_analista():
         print(f"      answers parsed: {len(ak_body['answers'])}")
 
 
-if __name__ == "__main__":
+def test_full_pipeline_benchmark():
+    """End-to-end benchmark across all real exam PDFs. Run with: pytest tests/benchmark/ -v -s"""
     mem.clear_all()
     total_start = time.perf_counter()
 
@@ -192,3 +198,4 @@ if __name__ == "__main__":
 
     total = time.perf_counter() - total_start
     section(f"TOTAL: {total*1000:.0f}ms")
+    mem.clear_all()
