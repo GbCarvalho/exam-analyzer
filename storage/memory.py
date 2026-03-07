@@ -47,6 +47,27 @@ def get_result(result_id: str) -> dict[str, Any] | None:
     return _results.get(result_id)
 
 
+def update_question(exam_id: str, number: int, statement: str) -> dict[str, Any] | None:
+    exam = _exams.get(exam_id)
+    if not exam:
+        return None
+    for q in exam["questions"]:
+        if q["number"] == number:
+            q["statement"] = statement
+            q["manual"] = True
+            return dict(q)
+    return None
+
+
+def bulk_update_questions(exam_id: str, updates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    results = []
+    for u in updates:
+        result = update_question(exam_id, u["number"], u["statement"])
+        if result is not None:
+            results.append(result)
+    return results
+
+
 def clear_all() -> None:
     """For test teardown only."""
     _exams.clear()

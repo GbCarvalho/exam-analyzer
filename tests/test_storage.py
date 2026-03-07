@@ -49,3 +49,55 @@ def test_store_and_get_answer_key():
 def test_store_and_get_result():
     mem.store_result("r1", {"score": {"correct": 5}, "breakdown": []})
     assert mem.get_result("r1")["score"]["correct"] == 5
+
+
+def test_update_question_sets_statement_and_manual():
+    mem.store_exam("e1", {
+        "exam_id": "e1",
+        "questions": [{"number": 1, "statement": "original", "manual": False}],
+    })
+    result = mem.update_question("e1", 1, "updated")
+    assert result["statement"] == "updated"
+    assert result["manual"] is True
+    exam = mem.get_exam("e1")
+    assert exam["questions"][0]["statement"] == "updated"
+    assert exam["questions"][0]["manual"] is True
+
+
+def test_update_question_returns_none_for_missing_exam():
+    assert mem.update_question("nope", 1, "x") is None
+
+
+def test_update_question_returns_none_for_missing_number():
+    mem.store_exam("e2", {"exam_id": "e2", "questions": [{"number": 1, "statement": "q", "manual": False}]})
+    assert mem.update_question("e2", 99, "x") is None
+
+
+def test_bulk_update_questions_sets_all():
+    mem.store_exam("e3", {
+        "exam_id": "e3",
+        "questions": [
+            {"number": 1, "statement": "q1", "manual": False},
+            {"number": 2, "statement": "q2", "manual": False},
+        ],
+    })
+    results = mem.bulk_update_questions("e3", [
+        {"number": 1, "statement": "q1 edited"},
+        {"number": 2, "statement": "q2 edited"},
+    ])
+    assert len(results) == 2
+    assert all(r["manual"] is True for r in results)
+    assert results[0]["statement"] == "q1 edited"
+
+
+def test_bulk_update_questions_skips_missing_numbers():
+    mem.store_exam("e4", {
+        "exam_id": "e4",
+        "questions": [{"number": 1, "statement": "q1", "manual": False}],
+    })
+    results = mem.bulk_update_questions("e4", [
+        {"number": 1, "statement": "ok"},
+        {"number": 99, "statement": "missing"},
+    ])
+    assert len(results) == 1
+    assert results[0]["number"] == 1
