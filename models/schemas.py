@@ -17,6 +17,7 @@ class ExamCreate(BaseModel):
 class Question(BaseModel):
     number: int
     statement: str
+    manual: bool = False
 
 
 class ExamResponse(BaseModel):
