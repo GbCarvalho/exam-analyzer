@@ -22,8 +22,8 @@ _HEADER_FRAGMENTS = (
 
 
 def is_cover_page(right_column_text: str) -> bool:
-    """FGV cover page: right column has no TIPO marker (no exam content)."""
-    return not bool(re.search(r"TIPO\s+\w+", right_column_text, re.IGNORECASE))
+    """FGV cover page: right column has no standalone question number on its own line."""
+    return not bool(re.search(r"^\d+\s*$", right_column_text, re.MULTILINE))
 
 
 def extract_exam_code(left_text: str) -> str | None:
@@ -59,38 +59,43 @@ def extract_exam_type(right_text: str) -> str | None:
 def parse_questions(column_texts: list[str]) -> list[Question]:
     """
     Parse questions from ordered column texts (left, right, left, right, ...).
-    Strips known FGV header lines before parsing.
+
+    FGV format: question number appears alone on its own line, followed by
+    question text on subsequent lines. E.g.:
+        1
+        Tendo em vista o papel histórico...
+        (A) option A
+        ...
     """
     questions: list[Question] = []
+    current_number: int | None = None
+    current_lines: list[str] = []
 
     for text in column_texts:
-        current_number: int | None = None
-        current_lines: list[str] = []
-
         for line in text.splitlines():
             stripped = line.strip()
             if not stripped:
                 continue
 
-            m = re.match(r"^(\d+)\s+(.*)", stripped)
-            if m:
+            # Standalone number = question start
+            if re.match(r"^\d+$", stripped):
                 if current_number is not None:
                     questions.append(Question(
                         number=current_number,
                         statement=" ".join(current_lines).strip(),
                     ))
-                current_number = int(m.group(1))
-                current_lines = [m.group(2)] if m.group(2).strip() else []
+                current_number = int(stripped)
+                current_lines = []
             elif current_number is not None:
                 if any(frag in stripped.upper() for frag in _HEADER_FRAGMENTS):
                     continue
                 current_lines.append(stripped)
 
-        if current_number is not None:
-            questions.append(Question(
-                number=current_number,
-                statement=" ".join(current_lines).strip(),
-            ))
+    if current_number is not None:
+        questions.append(Question(
+            number=current_number,
+            statement=" ".join(current_lines).strip(),
+        ))
 
     return questions
 
@@ -111,6 +116,14 @@ def parse_answer_key_text(text: str, cargo: str, exam_type: str) -> dict[str, st
             target_start = sec.end()
             target_end = sections[i + 1].start() if i + 1 < len(sections) else len(text)
             break
+
+    if target_start is None:
+        # Fallback: match by cargo name only (ignore turno)
+        for i, sec in enumerate(sections):
+            if cargo.lower() in sec.group(1).strip().lower():
+                target_start = sec.end()
+                target_end = sections[i + 1].start() if i + 1 < len(sections) else len(text)
+                break
 
     if target_start is None:
         return {}

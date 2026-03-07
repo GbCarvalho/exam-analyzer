@@ -21,9 +21,10 @@ from models.schemas import (
 
 app = FastAPI(title="Exam Analyzer")
 
+import os
 try:
     import anthropic
-    _claude = anthropic.Anthropic()
+    _claude = anthropic.Anthropic() if os.environ.get("ANTHROPIC_API_KEY") else None
 except Exception:
     _claude = None
 
@@ -52,6 +53,9 @@ def _extract_text_from_columns(doc: fitz.Document, skip_first: bool) -> list[str
     for i in range(start, doc.page_count):
         page = doc[i]
         w = page.rect.width
+        # Skip blank pages (e.g. FGV has an empty page after the cover)
+        if len(page.get_text().strip()) < 20:
+            continue
         left = page.get_text(clip=fitz.Rect(0, 0, w / 2, page.rect.height))
         right = page.get_text(clip=fitz.Rect(w / 2, 0, w, page.rect.height))
         columns.append(left)

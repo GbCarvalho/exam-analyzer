@@ -17,7 +17,8 @@ def test_fgv_cover_page_detected():
 
 
 def test_fgv_cover_page_not_detected_on_content_page():
-    right_text = "FGV CONHECIMENTO\n\nTIPO BRANCA – PÁGINA 2\n2 Com relação à estrutura..."
+    # Content pages have a standalone question number on its own line
+    right_text = "FGV CONHECIMENTO\n\nTIPO BRANCA – PÁGINA 2\n2\nCom relação à estrutura..."
     assert is_cover_page(right_text) is False
 
 
@@ -62,8 +63,9 @@ def test_extract_exam_type_returns_none_if_missing():
 # --- parse_questions ---
 
 def test_parse_questions_fgv():
-    left = "RECEITA FEDERAL DO BRASIL (CURSO DE FORMAÇÃO 2025/1)\n\nAUDITOR FISCAL\n\nSeção MCA\n1 Tendo em vista o papel histórico..."
-    right = "FGV CONHECIMENTO\n\nTIPO BRANCA – PÁGINA 2\n2 Com relação à estrutura..."
+    # FGV format: question number is a standalone line, text follows on next lines
+    left = "RECEITA FEDERAL DO BRASIL (CURSO DE FORMAÇÃO 2025/1)\n\nAUDITOR FISCAL\n\nSeção MCA\n1\nTendo em vista o papel histórico..."
+    right = "FGV CONHECIMENTO\n\nTIPO BRANCA – PÁGINA 2\n2\nCom relação à estrutura..."
     questions = parse_questions([left, right])
     assert len(questions) == 2
     assert questions[0].number == 1
@@ -71,7 +73,7 @@ def test_parse_questions_fgv():
 
 
 def test_parse_questions_strips_headers():
-    right = "FGV CONHECIMENTO\n\nTIPO BRANCA – PÁGINA 2\n5 Qual é a resposta?"
+    right = "FGV CONHECIMENTO\n\nTIPO BRANCA – PÁGINA 2\n5\nQual é a resposta?"
     questions = parse_questions([right])
     assert len(questions) == 1
     assert "FGV" not in questions[0].statement

@@ -19,13 +19,35 @@ def is_cover_page(text: str) -> bool:
 
 
 def parse_questions(text: str) -> list[Question]:
-    """Parse numbered questions from OCR'd CEBRASPE text."""
+    """
+    Parse numbered questions from CEBRASPE text.
+
+    Handles two formats produced by PyMuPDF:
+      - Inline:     "10 A oração que compõe..."
+      - Standalone: "4\\n" then text on the next line
+    """
     questions: list[Question] = []
     current_number: int | None = None
     current_lines: list[str] = []
 
     for line in text.splitlines():
-        m = re.match(r"^(\d+)\s+(.*)", line.strip())
+        stripped = line.strip()
+        if not stripped:
+            continue
+
+        # Standalone number on its own line
+        if re.match(r"^\d+$", stripped):
+            if current_number is not None:
+                questions.append(Question(
+                    number=current_number,
+                    statement=" ".join(current_lines).strip(),
+                ))
+            current_number = int(stripped)
+            current_lines = []
+            continue
+
+        # Inline: number followed by text on the same line
+        m = re.match(r"^(\d+)\s+(.*)", stripped)
         if m:
             if current_number is not None:
                 questions.append(Question(
@@ -34,8 +56,10 @@ def parse_questions(text: str) -> list[Question]:
                 ))
             current_number = int(m.group(1))
             current_lines = [m.group(2)]
-        elif current_number is not None and line.strip():
-            current_lines.append(line.strip())
+            continue
+
+        if current_number is not None:
+            current_lines.append(stripped)
 
     if current_number is not None:
         questions.append(Question(
