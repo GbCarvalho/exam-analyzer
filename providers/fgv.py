@@ -33,7 +33,7 @@ def extract_exam_code(left_text: str) -> str | None:
 
 def extract_cargo(left_text: str) -> str | None:
     """Extract cargo from FGV left column header (all-caps line after institution name)."""
-    lines = [l.strip() for l in left_text.splitlines() if l.strip()]
+    lines = [ln.strip() for ln in left_text.splitlines() if ln.strip()]
     for line in lines:
         # All-caps line, at least 5 chars, not the institution name
         if (
@@ -80,10 +80,12 @@ def parse_questions(column_texts: list[str]) -> list[Question]:
             # Standalone number = question start
             if re.match(r"^\d+$", stripped):
                 if current_number is not None:
-                    questions.append(Question(
-                        number=current_number,
-                        statement=" ".join(current_lines).strip(),
-                    ))
+                    questions.append(
+                        Question(
+                            number=current_number,
+                            statement=" ".join(current_lines).strip(),
+                        )
+                    )
                 current_number = int(stripped)
                 current_lines = []
             elif current_number is not None:
@@ -92,10 +94,12 @@ def parse_questions(column_texts: list[str]) -> list[Question]:
                 current_lines.append(stripped)
 
     if current_number is not None:
-        questions.append(Question(
-            number=current_number,
-            statement=" ".join(current_lines).strip(),
-        ))
+        questions.append(
+            Question(
+                number=current_number,
+                statement=" ".join(current_lines).strip(),
+            )
+        )
 
     return questions
 

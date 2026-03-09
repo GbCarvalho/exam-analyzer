@@ -1,3 +1,4 @@
+import os
 import pytest
 import pytest_asyncio
 from contextlib import asynccontextmanager
@@ -6,8 +7,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
 from sqlmodel import SQLModel
 from fastapi.testclient import TestClient
-from main import app
-from storage.database import get_session
+
+os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+
+from main import app  # noqa: E402
+from storage.database import get_session  # noqa: E402
 
 # Import models so metadata is populated
 import models.db  # noqa: F401

@@ -12,3 +12,7 @@ run = "uvicorn main:app --reload"
 [tasks.test]
 description = "Run tests"
 run = "pytest"
+
+[tasks."test:docker"]
+description = "Run tests inside Docker (production-parity)"
+run = "docker compose -f docker-compose.test.yml run --rm test"

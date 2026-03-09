@@ -7,6 +7,7 @@ EXPECTED = 5
 
 # --- score_answers ---
 
+
 def test_all_correct():
     candidates = ["C", "E", "A", None, "B"]  # Q4 annulled
     score = score_answers(candidates, ANSWER_KEY, EXPECTED)
@@ -65,6 +66,7 @@ def test_all_blank():
 
 
 # --- build_breakdown ---
+
 
 def test_build_breakdown_length():
     candidates = ["C", "E", "A", None, "B"]

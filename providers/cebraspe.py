@@ -38,10 +38,12 @@ def parse_questions(text: str) -> list[Question]:
         # Standalone number on its own line
         if re.match(r"^\d+$", stripped):
             if current_number is not None:
-                questions.append(Question(
-                    number=current_number,
-                    statement=" ".join(current_lines).strip(),
-                ))
+                questions.append(
+                    Question(
+                        number=current_number,
+                        statement=" ".join(current_lines).strip(),
+                    )
+                )
             current_number = int(stripped)
             current_lines = []
             continue
@@ -50,10 +52,12 @@ def parse_questions(text: str) -> list[Question]:
         m = re.match(r"^(\d+)\s+(.*)", stripped)
         if m:
             if current_number is not None:
-                questions.append(Question(
-                    number=current_number,
-                    statement=" ".join(current_lines).strip(),
-                ))
+                questions.append(
+                    Question(
+                        number=current_number,
+                        statement=" ".join(current_lines).strip(),
+                    )
+                )
             current_number = int(m.group(1))
             current_lines = [m.group(2)]
             continue
@@ -62,10 +66,12 @@ def parse_questions(text: str) -> list[Question]:
             current_lines.append(stripped)
 
     if current_number is not None:
-        questions.append(Question(
-            number=current_number,
-            statement=" ".join(current_lines).strip(),
-        ))
+        questions.append(
+            Question(
+                number=current_number,
+                statement=" ".join(current_lines).strip(),
+            )
+        )
 
     return questions
 
@@ -76,7 +82,7 @@ def parse_answer_key_text(text: str) -> dict[str, str]:
     Ignores rows with '0' (filler placeholders).
     """
     result: dict[str, str] = {}
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
 
     i = 0
     while i < len(lines):

@@ -43,12 +43,14 @@ def build_breakdown(
         is_annulled = key == ANNULLED
         hit = (not is_annulled) and (candidate is not None) and (candidate == key)
 
-        items.append(BreakdownItem(
-            question=i,
-            candidate=candidate,
-            correct=None if is_annulled else key,
-            hit=hit,
-            annulled=is_annulled,
-        ))
+        items.append(
+            BreakdownItem(
+                question=i,
+                candidate=candidate,
+                correct=None if is_annulled else key,
+                hit=hit,
+                annulled=is_annulled,
+            )
+        )
 
     return items

@@ -1,4 +1,3 @@
-import pytest
 from providers.fgv import (
     extract_exam_code,
     extract_cargo,
@@ -10,6 +9,7 @@ from providers.fgv import (
 
 
 # --- is_cover_page ---
+
 
 def test_fgv_cover_page_detected():
     right_text = "CEITA FEDERAL DO BRASIL\nCURSO DE FORMAÇÃO 2025/1"
@@ -24,6 +24,7 @@ def test_fgv_cover_page_not_detected_on_content_page():
 
 # --- extract_exam_code ---
 
+
 def test_extract_exam_code():
     left_text = "RECEITA FEDERAL DO BRASIL (CURSO DE FORMAÇÃO 2025/1)\n\nAUDITOR FISCAL"
     assert extract_exam_code(left_text) == "CURSO DE FORMAÇÃO 2025/1"
@@ -35,13 +36,16 @@ def test_extract_exam_code_returns_none_if_missing():
 
 # --- extract_cargo ---
 
+
 def test_extract_cargo():
     left_text = "RECEITA FEDERAL DO BRASIL (CURSO DE FORMAÇÃO 2025/1)\n\nAUDITOR FISCAL\n\nSeção X"
     assert extract_cargo(left_text) == "AUDITOR FISCAL"
 
 
 def test_extract_cargo_analista():
-    left_text = "RECEITA FEDERAL DO BRASIL (CURSO DE FORMAÇÃO 2025/1)\n\nANALISTA TRIBUTÁRIO\n\nSeção Y"
+    left_text = (
+        "RECEITA FEDERAL DO BRASIL (CURSO DE FORMAÇÃO 2025/1)\n\nANALISTA TRIBUTÁRIO\n\nSeção Y"
+    )
     assert extract_cargo(left_text) == "ANALISTA TRIBUTÁRIO"
 
 
@@ -50,6 +54,7 @@ def test_extract_cargo_returns_none_if_missing():
 
 
 # --- extract_exam_type ---
+
 
 def test_extract_exam_type():
     right_text = "FGV CONHECIMENTO\n\nTIPO BRANCA – PÁGINA 2"
@@ -61,6 +66,7 @@ def test_extract_exam_type_returns_none_if_missing():
 
 
 # --- parse_questions ---
+
 
 def test_parse_questions_fgv():
     # FGV format: question number is a standalone line, text follows on next lines
@@ -82,19 +88,14 @@ def test_parse_questions_strips_headers():
 
 # --- parse_answer_key_text ---
 
+
 def test_parse_answer_key_fgv_section():
-    text = (
-        "Auditor Fiscal - 1 - Turno Manhã\n"
-        "1 C\n2 D\n3 A\n4 *\n"
-    )
+    text = "Auditor Fiscal - 1 - Turno Manhã\n1 C\n2 D\n3 A\n4 *\n"
     result = parse_answer_key_text(text, cargo="Auditor Fiscal", exam_type="1")
     assert result == {"1": "C", "2": "D", "3": "A", "4": "*"}
 
 
 def test_parse_answer_key_fgv_wrong_cargo_returns_empty():
-    text = (
-        "Auditor Fiscal - 1 - Turno Manhã\n"
-        "1 C\n2 D\n"
-    )
+    text = "Auditor Fiscal - 1 - Turno Manhã\n1 C\n2 D\n"
     result = parse_answer_key_text(text, cargo="Analista Tributário", exam_type="1")
     assert result == {}

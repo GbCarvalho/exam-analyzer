@@ -4,8 +4,8 @@ Real-world benchmark: runs full pipeline on actual exam PDFs and reports timing.
 Not executed in the default pytest run. Run explicitly:
     pytest tests/benchmark/ -v -s
 """
+
 import time
-import json
 import pytest
 from pathlib import Path
 from fastapi.testclient import TestClient
@@ -19,16 +19,16 @@ ASSETS = Path(__file__).parents[3] / "assets"
 
 
 def section(title: str):
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  {title}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 def step(label: str, resp, t: float):
     status = resp.status_code
     mark = "✓" if status in (200, 206) else "✗"
     partial = " [PARTIAL]" if status == 206 else ""
-    print(f"  {mark} [{t*1000:.0f}ms] {label} → {status}{partial}")
+    print(f"  {mark} [{t * 1000:.0f}ms] {label} → {status}{partial}")
     if status not in (200, 206):
         print(f"      ERROR: {resp.text[:200]}")
     return resp.json() if status in (200, 206) else None
@@ -79,7 +79,9 @@ def run_fgv():
     score_body = step("POST /analyze", resp, time.perf_counter() - t0)
     if score_body:
         s = score_body["score"]
-        print(f"      correct={s['correct']} wrong={s['wrong']} blank={s['blank']} annulled={s['annulled']} pct={s['pct']}%")
+        print(
+            f"      correct={s['correct']} wrong={s['wrong']} blank={s['blank']} annulled={s['annulled']} pct={s['pct']}%"
+        )
 
     # 4. Fetch breakdown
     if score_body:
@@ -143,7 +145,9 @@ def run_cebraspe():
     score_body = step("POST /analyze", resp, time.perf_counter() - t0)
     if score_body:
         s = score_body["score"]
-        print(f"      correct={s['correct']} wrong={s['wrong']} blank={s['blank']} annulled={s['annulled']} pct={s['pct']}%")
+        print(
+            f"      correct={s['correct']} wrong={s['wrong']} blank={s['blank']} annulled={s['annulled']} pct={s['pct']}%"
+        )
 
     # 4. Fetch breakdown
     if score_body:
@@ -197,5 +201,5 @@ def test_full_pipeline_benchmark():
     run_fgv_analista()
 
     total = time.perf_counter() - total_start
-    section(f"TOTAL: {total*1000:.0f}ms")
+    section(f"TOTAL: {total * 1000:.0f}ms")
     mem.clear_all()

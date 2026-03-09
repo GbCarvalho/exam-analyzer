@@ -9,17 +9,14 @@ class ExamRepository:
         self.session = session
 
     async def get(self, exam_id: str) -> Exam | None:
-        result = await self.session.execute(
-            select(Exam).where(Exam.exam_id == exam_id)
-        )
+        result = await self.session.execute(select(Exam).where(Exam.exam_id == exam_id))
         return result.scalar_one_or_none()
 
     async def get_with_questions(self, exam_id: str) -> Exam | None:
         from sqlalchemy.orm import selectinload
+
         result = await self.session.execute(
-            select(Exam)
-            .options(selectinload(Exam.questions))
-            .where(Exam.exam_id == exam_id)
+            select(Exam).options(selectinload(Exam.questions)).where(Exam.exam_id == exam_id)
         )
         return result.scalar_one_or_none()
 
@@ -65,13 +62,9 @@ class ExamRepository:
         result = await self.session.execute(select(Exam))
         return list(result.scalars().all())
 
-    async def update_question(
-        self, exam_id: str, number: int, statement: str
-    ) -> Question | None:
+    async def update_question(self, exam_id: str, number: int, statement: str) -> Question | None:
         result = await self.session.execute(
-            select(Question).where(
-                and_(Question.exam_id == exam_id, Question.number == number)
-            )
+            select(Question).where(and_(Question.exam_id == exam_id, Question.number == number))
         )
         question = result.scalar_one_or_none()
         if not question:
@@ -82,9 +75,7 @@ class ExamRepository:
         await self.session.refresh(question)
         return question
 
-    async def bulk_update_questions(
-        self, exam_id: str, updates: list[dict]
-    ) -> list[Question]:
+    async def bulk_update_questions(self, exam_id: str, updates: list[dict]) -> list[Question]:
         updated = []
         for u in updates:
             q = await self.update_question(exam_id, u["number"], u["statement"])
