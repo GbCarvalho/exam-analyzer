@@ -1,6 +1,5 @@
-from __future__ import annotations
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -17,9 +16,9 @@ class Exam(SQLModel, table=True):
     partial: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    questions: list["Question"] = Relationship(back_populates="exam")
+    questions: List["Question"] = Relationship(back_populates="exam")
     answer_key: Optional["AnswerKey"] = Relationship(back_populates="exam")
-    results: list["Result"] = Relationship(back_populates="exam")
+    results: List["Result"] = Relationship(back_populates="exam")
 
 
 class Question(SQLModel, table=True):
@@ -41,7 +40,7 @@ class AnswerKey(SQLModel, table=True):
     exam_id: str = Field(foreign_key="exams.exam_id", unique=True)
 
     exam: Optional[Exam] = Relationship(back_populates="answer_key")
-    items: list["AnswerKeyItem"] = Relationship(back_populates="answer_key")
+    items: List["AnswerKeyItem"] = Relationship(back_populates="answer_key")
 
 
 class AnswerKeyItem(SQLModel, table=True):
@@ -68,7 +67,7 @@ class Result(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     exam: Optional[Exam] = Relationship(back_populates="results")
-    breakdown: list["ResultBreakdown"] = Relationship(back_populates="result")
+    breakdown: List["ResultBreakdown"] = Relationship(back_populates="result")
 
 
 class ResultBreakdown(SQLModel, table=True):

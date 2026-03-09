@@ -37,8 +37,8 @@ class AnswerKeyRepository:
             self.session.add(item)
 
         await self.session.commit()
-        await self.session.refresh(ak)
-        return ak
+        # Re-fetch with items loaded to avoid lazy-load in async context
+        return await self.get(exam_id)
 
     def to_dict(self, ak: AnswerKey) -> dict[str, str]:
         """Convert AnswerKey items to {question_number: answer} dict."""

@@ -1,5 +1,6 @@
 import pytest
 import pytest_asyncio
+from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
@@ -10,6 +11,12 @@ from storage.database import get_session
 
 # Import models so metadata is populated
 import models.db  # noqa: F401
+
+
+@asynccontextmanager
+async def _noop_lifespan(app):
+    """Skip DB migrations in tests — SQLite tables are created by the session fixture."""
+    yield
 
 
 @pytest_asyncio.fixture
@@ -37,6 +44,7 @@ def client(session):
     async def override_get_session():
         yield session
 
+    app.router.lifespan_context = _noop_lifespan
     app.dependency_overrides[get_session] = override_get_session
     with TestClient(app) as c:
         yield c

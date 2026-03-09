@@ -39,5 +39,5 @@ class ResultRepository:
             self.session.add(item)
 
         await self.session.commit()
-        await self.session.refresh(res)
-        return res
+        # Re-fetch with breakdown loaded to avoid lazy-load in async context
+        return await self.get(res.result_id)
