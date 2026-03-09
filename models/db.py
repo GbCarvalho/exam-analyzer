@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -14,7 +14,7 @@ class Exam(SQLModel, table=True):
     booklet_type: Optional[str] = None
     expected_questions: int
     partial: bool = False
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     questions: List["Question"] = Relationship(back_populates="exam")
     answer_key: Optional["AnswerKey"] = Relationship(back_populates="exam")
@@ -64,7 +64,7 @@ class Result(SQLModel, table=True):
     blank: int
     annulled: int
     pct: float
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     exam: Optional[Exam] = Relationship(back_populates="results")
     breakdown: List["ResultBreakdown"] = Relationship(back_populates="result")
