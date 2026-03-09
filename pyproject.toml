@@ -10,6 +10,11 @@ requires-python = ">=3.11"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--ignore=tests/benchmark"
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning:swig",
+    "ignore:builtin type Swig:DeprecationWarning",
+]
 
 [tool.pytest.ini_options.markers]
 benchmark = "Real-world benchmark tests using actual PDF assets. Run with: pytest tests/benchmark/ -v -s --no-header"
