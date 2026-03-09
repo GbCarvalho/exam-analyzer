@@ -3,7 +3,7 @@ import fitz
 from PIL import Image
 from pathlib import Path
 
-ASSETS = Path(__file__).parents[3] / "assets"
+ASSETS = Path(__file__).parents[1] / "assets"
 FGV_PDF = ASSETS / "fgv-auditor-fiscal-frb100-tipo-1.pdf"
 CEBRASPE_PDF = ASSETS / "cebraspe-basicos-tcu_25_aufc.pdf"
 
