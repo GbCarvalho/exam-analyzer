@@ -52,3 +52,4 @@ target-version = "py311"
 [tool.coverage.run]
 source = ["."]
 omit = ["tests/*", ".venv/*", "alembic/*"]
+relative_files = true
