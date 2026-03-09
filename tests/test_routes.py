@@ -38,15 +38,17 @@ def _fgv_pdf_mock():
 
 def _post_fgv_exam(expected_questions: int = 5) -> dict:
     """Helper: upload a mocked FGV exam."""
-    with patch("main._merge_pdfs", return_value=MagicMock()), \
-         patch("main.fgv.is_cover_page", return_value=True), \
-         patch("main._extract_text_from_columns", return_value=STUB_COLUMN_TEXTS), \
-         patch("main._detect_provider", return_value="fgv"), \
-         patch("main.fgv.extract_exam_code", return_value="CURSO DE FORMAÇÃO 2025/1"), \
-         patch("main.fgv.extract_cargo", return_value="AUDITOR FISCAL"), \
-         patch("main.fgv.extract_exam_type", return_value="TIPO BRANCA"), \
-         patch("main.fgv.parse_questions", return_value=STUB_QUESTIONS), \
-         patch("main.needs_fallback", return_value=False):
+    with (
+        patch("main._merge_pdfs", return_value=MagicMock()),
+        patch("main.fgv.is_cover_page", return_value=True),
+        patch("main._extract_text_from_columns", return_value=STUB_COLUMN_TEXTS),
+        patch("main._detect_provider", return_value="fgv"),
+        patch("main.fgv.extract_exam_code", return_value="CURSO DE FORMAÇÃO 2025/1"),
+        patch("main.fgv.extract_cargo", return_value="AUDITOR FISCAL"),
+        patch("main.fgv.extract_exam_type", return_value="TIPO BRANCA"),
+        patch("main.fgv.parse_questions", return_value=STUB_QUESTIONS),
+        patch("main.needs_fallback", return_value=False),
+    ):
         resp = client.post(
             "/exams",
             data={"expected_questions": expected_questions},
@@ -56,6 +58,7 @@ def _post_fgv_exam(expected_questions: int = 5) -> dict:
 
 
 # --- POST /exams ---
+
 
 def test_upload_fgv_exam_returns_200():
     resp = _post_fgv_exam()
@@ -68,10 +71,12 @@ def test_upload_fgv_exam_returns_200():
 
 
 def test_upload_cebraspe_requires_cargo():
-    with patch("main._merge_pdfs", return_value=MagicMock()), \
-         patch("main.fgv.is_cover_page", return_value=False), \
-         patch("main._extract_text_from_columns", return_value=["CEBRASPE – TCU text", "more text"]), \
-         patch("main._detect_provider", return_value="cebraspe"):
+    with (
+        patch("main._merge_pdfs", return_value=MagicMock()),
+        patch("main.fgv.is_cover_page", return_value=False),
+        patch("main._extract_text_from_columns", return_value=["CEBRASPE – TCU text", "more text"]),
+        patch("main._detect_provider", return_value="cebraspe"),
+    ):
         resp = client.post(
             "/exams",
             data={"expected_questions": 100},
@@ -81,13 +86,15 @@ def test_upload_cebraspe_requires_cargo():
 
 
 def test_upload_cebraspe_with_cargo():
-    with patch("main._merge_pdfs", return_value=MagicMock()), \
-         patch("main.fgv.is_cover_page", return_value=False), \
-         patch("main._extract_text_from_columns", return_value=["CEBRASPE text", "more"]), \
-         patch("main._detect_provider", return_value="cebraspe"), \
-         patch("main.cebraspe.extract_exam_code", return_value="TCU/AUFC – Edital: 2025"), \
-         patch("main.cebraspe.parse_questions", return_value=STUB_QUESTIONS), \
-         patch("main.needs_fallback", return_value=False):
+    with (
+        patch("main._merge_pdfs", return_value=MagicMock()),
+        patch("main.fgv.is_cover_page", return_value=False),
+        patch("main._extract_text_from_columns", return_value=["CEBRASPE text", "more"]),
+        patch("main._detect_provider", return_value="cebraspe"),
+        patch("main.cebraspe.extract_exam_code", return_value="TCU/AUFC – Edital: 2025"),
+        patch("main.cebraspe.parse_questions", return_value=STUB_QUESTIONS),
+        patch("main.needs_fallback", return_value=False),
+    ):
         resp = client.post(
             "/exams",
             data={"expected_questions": 5, "cargo": "Auditor Federal", "booklet_type": "basicos"},
@@ -104,18 +111,20 @@ def test_upload_duplicate_returns_409():
 
 
 def test_upload_returns_206_when_partial():
-    with patch("main._merge_pdfs", return_value=MagicMock()), \
-         patch("main.fgv.is_cover_page", return_value=True), \
-         patch("main._extract_text_from_columns", return_value=STUB_COLUMN_TEXTS), \
-         patch("main._detect_provider", return_value="fgv"), \
-         patch("main.fgv.extract_exam_code", return_value="CURSO DE FORMAÇÃO 2025/1"), \
-         patch("main.fgv.extract_cargo", return_value="AUDITOR FISCAL"), \
-         patch("main.fgv.extract_exam_type", return_value="TIPO BRANCA"), \
-         patch("main.fgv.parse_questions", return_value=STUB_QUESTIONS), \
-         patch("main.needs_fallback", return_value=True), \
-         patch("main.extract_column_images", return_value=[]), \
-         patch("main.image_to_text", return_value=""), \
-         patch("main._claude", None):
+    with (
+        patch("main._merge_pdfs", return_value=MagicMock()),
+        patch("main.fgv.is_cover_page", return_value=True),
+        patch("main._extract_text_from_columns", return_value=STUB_COLUMN_TEXTS),
+        patch("main._detect_provider", return_value="fgv"),
+        patch("main.fgv.extract_exam_code", return_value="CURSO DE FORMAÇÃO 2025/1"),
+        patch("main.fgv.extract_cargo", return_value="AUDITOR FISCAL"),
+        patch("main.fgv.extract_exam_type", return_value="TIPO BRANCA"),
+        patch("main.fgv.parse_questions", return_value=STUB_QUESTIONS),
+        patch("main.needs_fallback", return_value=True),
+        patch("main.extract_column_images", return_value=[]),
+        patch("main.image_to_text", return_value=""),
+        patch("main._claude", None),
+    ):
         resp = client.post(
             "/exams",
             data={"expected_questions": 60},
@@ -126,6 +135,7 @@ def test_upload_returns_206_when_partial():
 
 
 # --- GET /exams/{exam_id} ---
+
 
 def test_get_exam():
     exam_id = _post_fgv_exam().json()["exam_id"]
@@ -141,6 +151,7 @@ def test_get_exam_not_found():
 
 # --- POST /exams/{exam_id}/answer-key (JSON) ---
 
+
 def test_upload_answer_key_json():
     exam_id = _post_fgv_exam().json()["exam_id"]
     resp = client.post(f"/exams/{exam_id}/answer-key", json={"answers": {"1": "C", "2": "E"}})
@@ -155,10 +166,13 @@ def test_upload_answer_key_exam_not_found():
 
 # --- POST /exams/{exam_id}/answer-key/upload (PDF) ---
 
+
 def test_upload_answer_key_pdf():
     exam_id = _post_fgv_exam().json()["exam_id"]
-    with patch("main._open_pdf") as mock_open, \
-         patch("main.fgv.parse_answer_key_text", return_value={"1": "C", "2": "D", "3": "A"}):
+    with (
+        patch("main._open_pdf") as mock_open,
+        patch("main.fgv.parse_answer_key_text", return_value={"1": "C", "2": "D", "3": "A"}),
+    ):
         mock_doc = MagicMock()
         mock_doc.page_count = 1
         mock_doc.__getitem__ = lambda self, i: MagicMock(get_text=lambda: "gabarito text")
@@ -172,6 +186,7 @@ def test_upload_answer_key_pdf():
 
 
 # --- GET /exams/{exam_id}/answer-key ---
+
 
 def test_get_answer_key():
     exam_id = _post_fgv_exam().json()["exam_id"]
@@ -188,9 +203,12 @@ def test_get_answer_key_not_found():
 
 # --- POST /exams/{exam_id}/analyze ---
 
+
 def _exam_with_key() -> tuple[str, str]:
     exam_id = _post_fgv_exam().json()["exam_id"]
-    client.post(f"/exams/{exam_id}/answer-key", json={"answers": {str(i): "C" for i in range(1, 6)}})
+    client.post(
+        f"/exams/{exam_id}/answer-key", json={"answers": {str(i): "C" for i in range(1, 6)}}
+    )
     return exam_id
 
 
@@ -215,6 +233,7 @@ def test_analyze_no_answer_key_returns_404():
 
 
 # --- GET /exams/{exam_id}/results/{result_id} ---
+
 
 def test_get_results_breakdown():
     exam_id = _exam_with_key()
@@ -255,12 +274,15 @@ def test_patch_question_returns_404_for_missing_number():
 
 def test_bulk_patch_questions():
     exam_id = _post_fgv_exam().json()["exam_id"]
-    r = client.patch(f"/exams/{exam_id}/questions", json={
-        "updates": [
-            {"number": 1, "statement": "Bulk Q1"},
-            {"number": 2, "statement": "Bulk Q2"},
-        ]
-    })
+    r = client.patch(
+        f"/exams/{exam_id}/questions",
+        json={
+            "updates": [
+                {"number": 1, "statement": "Bulk Q1"},
+                {"number": 2, "statement": "Bulk Q2"},
+            ]
+        },
+    )
     assert r.status_code == 200
     data = r.json()
     assert len(data) == 2
@@ -268,5 +290,7 @@ def test_bulk_patch_questions():
 
 
 def test_bulk_patch_questions_returns_404_for_missing_exam():
-    r = client.patch("/exams/nonexistent/questions", json={"updates": [{"number": 1, "statement": "x"}]})
+    r = client.patch(
+        "/exams/nonexistent/questions", json={"updates": [{"number": 1, "statement": "x"}]}
+    )
     assert r.status_code == 404

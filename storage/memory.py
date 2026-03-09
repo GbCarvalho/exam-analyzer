@@ -3,7 +3,7 @@ from typing import Any
 
 _exams: dict[str, dict[str, Any]] = {}
 _answer_keys: dict[str, dict[str, Any]] = {}  # keyed by exam_id
-_results: dict[str, dict[str, Any]] = {}       # keyed by result_id
+_results: dict[str, dict[str, Any]] = {}  # keyed by result_id
 
 
 def store_exam(exam_id: str, data: dict[str, Any]) -> None:

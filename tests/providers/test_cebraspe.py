@@ -1,4 +1,3 @@
-import pytest
 from providers.cebraspe import (
     extract_exam_code,
     parse_questions,
@@ -8,6 +7,7 @@ from providers.cebraspe import (
 
 
 # --- extract_exam_code ---
+
 
 def test_extract_exam_code_standard():
     header = "CEBRASPE – TCU/AUFC – Edital: 2025"
@@ -20,11 +20,13 @@ def test_extract_exam_code_returns_none_if_not_found():
 
 # --- is_cover_page ---
 
+
 def test_cebraspe_has_no_cover_page():
     assert is_cover_page("CEBRASPE – TCU/AUFC – Edital: 2025\n\n1 Some question text") is False
 
 
 # --- parse_questions ---
+
 
 def test_parse_questions_basic():
     text = """
@@ -49,6 +51,7 @@ def test_parse_questions_skips_header():
 
 
 # --- parse_answer_key_text ---
+
 
 def test_parse_answer_key_ce_format():
     text = """

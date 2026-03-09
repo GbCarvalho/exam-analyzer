@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 import fitz
 import uuid6
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
@@ -33,9 +34,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import os
 try:
     import anthropic
+
     _claude = anthropic.Anthropic() if os.environ.get("ANTHROPIC_API_KEY") else None
 except Exception:
     _claude = None
@@ -138,7 +139,9 @@ async def upload_exam(
         if not inferred_cargo:
             inferred_cargo = fgv.extract_cargo(column_texts[0])
         if not inferred_exam_type:
-            inferred_exam_type = fgv.extract_exam_type(column_texts[1]) if len(column_texts) > 1 else None
+            inferred_exam_type = (
+                fgv.extract_exam_type(column_texts[1]) if len(column_texts) > 1 else None
+            )
         questions = fgv.parse_questions(column_texts)
 
     elif provider == "cebraspe":
@@ -154,7 +157,9 @@ async def upload_exam(
         raise HTTPException(status_code=422, detail="Could not detect exam provider")
 
     # Check for duplicate
-    existing = mem.find_exam_by_identity(exam_code, inferred_cargo, inferred_exam_type, booklet_type)
+    existing = mem.find_exam_by_identity(
+        exam_code, inferred_cargo, inferred_exam_type, booklet_type
+    )
     if existing:
         raise HTTPException(
             status_code=409,
@@ -271,10 +276,13 @@ def analyze(exam_id: str, body: AnalyzeRequest):
     score = score_answers(body.answers, ak["answers"], exam["expected_questions"])
     result_id = _new_id()
     breakdown = build_breakdown(body.answers, ak["answers"], exam["expected_questions"])
-    mem.store_result(result_id, {
-        "score": score.model_dump(),
-        "breakdown": [b.model_dump() for b in breakdown],
-    })
+    mem.store_result(
+        result_id,
+        {
+            "score": score.model_dump(),
+            "breakdown": [b.model_dump() for b in breakdown],
+        },
+    )
     return {"result_id": result_id, "score": score}
 
 

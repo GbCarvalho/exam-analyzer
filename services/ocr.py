@@ -34,22 +34,26 @@ def ocr_with_claude_fallback(
     """Send page images to Claude vision and return extracted text."""
     content = []
     for img in images:
-        content.append({
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": "image/png",
-                "data": image_to_base64(img),
-            },
-        })
-    content.append({
-        "type": "text",
-        "text": (
-            "Extract all exam questions from these images. "
-            "For each question, output its number followed by its full text. "
-            "Preserve the original Portuguese text exactly."
-        ),
-    })
+        content.append(
+            {
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": "image/png",
+                    "data": image_to_base64(img),
+                },
+            }
+        )
+    content.append(
+        {
+            "type": "text",
+            "text": (
+                "Extract all exam questions from these images. "
+                "For each question, output its number followed by its full text. "
+                "Preserve the original Portuguese text exactly."
+            ),
+        }
+    )
     response = client.messages.create(
         model="claude-opus-4-6",
         max_tokens=4096,

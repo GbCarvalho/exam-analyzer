@@ -1,5 +1,5 @@
-import fitz
 import pytest
+import fitz
 from PIL import Image
 from pathlib import Path
 
@@ -7,9 +7,15 @@ ASSETS = Path(__file__).parents[3] / "assets"
 FGV_PDF = ASSETS / "fgv-auditor-fiscal-frb100-tipo-1.pdf"
 CEBRASPE_PDF = ASSETS / "cebraspe-basicos-tcu_25_aufc.pdf"
 
+pytestmark = pytest.mark.skipif(
+    not FGV_PDF.exists() or not CEBRASPE_PDF.exists(),
+    reason="PDF assets not available",
+)
+
 
 def test_split_page_returns_two_images():
     from services.pdf import split_page_vertically
+
     doc = fitz.open(str(FGV_PDF))
     page = doc[1]  # page 2, has two columns
     left, right = split_page_vertically(page)
@@ -19,6 +25,7 @@ def test_split_page_returns_two_images():
 
 def test_split_page_left_is_left_half():
     from services.pdf import split_page_vertically
+
     doc = fitz.open(str(FGV_PDF))
     page = doc[1]
     left, right = split_page_vertically(page)
@@ -29,6 +36,7 @@ def test_split_page_left_is_left_half():
 
 def test_extract_column_images_ordering():
     from services.pdf import extract_column_images
+
     doc = fitz.open(str(FGV_PDF))
     # FGV: skip page 0 (cover), pages 1+ have two columns
     columns = extract_column_images(doc, skip_first=True)
@@ -39,6 +47,7 @@ def test_extract_column_images_ordering():
 
 def test_extract_column_images_no_skip():
     from services.pdf import extract_column_images
+
     doc = fitz.open(str(CEBRASPE_PDF))
     columns = extract_column_images(doc, skip_first=False)
     assert len(columns) == doc.page_count * 2
